@@ -7,15 +7,20 @@
 </head>
 
 <% 
-   require "./score_calc.rb"
-
    num_jumps = 8;
    num_spins = 3;
    num_stsq = 1;
    num_chsq = 1;
 
-   score_calc = ScoreCalc.new
-   elements = score_calc.elements
+def jump_options
+   output = []
+   [4, 3, 2, 1].each {|rev|
+     ['A', 'Lz', 'F', 'Lo', 'S', 'T'].each {|type|
+       output << %Q[<option value="#{rev}#{type}">#{rev}#{type}</option>]
+     }
+   }
+   output.join("\n")
+end
 
 %>
 
@@ -63,9 +68,7 @@ Segment:
       <span class="first">
 	<select class="element" onChange="recalc();">
 	  <option value=""></option>
-	  <% elements.values.select {|elem| elem.type == :jump}.each {|elem| %>
-	  <option value="<%= elem.name %>"><%= elem.name %></option>
-	  <% } %>
+	  <%= jump_options() %>
 	</select>
 	<select class="edge" onChange="recalc();">
 	  <option value=""></option>
@@ -84,9 +87,7 @@ Segment:
 	-
 	<select class="element" onChange="recalc();">
 	  <option value=""></option>
-	  <% elements.values.select {|elem| elem.type == :jump}.each {|elem| %>
-	  <option value="<%= elem.name %>"><%= elem.name %></option>
-	  <% } %>
+	  <%= jump_options() %>
 	</select>
 	<select class="edge" onChange="recalc();">
 	  <option value=""></option>
@@ -95,6 +96,7 @@ Segment:
 	</select>
 	<select class="rotation" onChange="recalc()">
 	  <option value=""></option>
+	  <%= jump_options() %>
 	<option value="<">&lt;</option>
 	  <option value="<<">&lt;&lt;</option>
 	</select>
@@ -105,9 +107,6 @@ Segment:
 	-
 	<select class="element" onChange="recalc();">
 	  <option value=""></option>
-	  <% elements.values.select {|elem| elem.type == :jump}.each {|elem| %>
-	  <option value="<%= elem.name %>"><%= elem.name %></option>
-	  <% } %>
 	</select>
 	<select class="edge" onChange="recalc();">
 	  <option value=""></option>
