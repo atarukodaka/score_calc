@@ -25,7 +25,8 @@ function calc_single_jump_bv(sjump){
     return parseFloat(bv);
 }
 function calc_jump_bv(jump){
-
+    var bv;
+    
     switch (jump.type){
     case "solo":
 	bv = calc_single_jump_bv(jump.first);
@@ -39,17 +40,36 @@ function calc_jump_bv(jump){
     }
     // credit
     if (jump.credit == "x") bv *= 1.1;
-    return parseFloat(parseInt(bv*100)/100);
+    bv = parseFloat(parseInt(bv*100)/100);
+    return bv;
 }
 function calc_jump_goesov(jump) {
-    elem = elements[jump.first.name];
+    bv1 = calc_single_jump_bv(jump.first);
+    bv2 = calc_single_jump_bv(jump.second);
+    bv3 = calc_single_jump_bv(jump.third);
+    
+    highest_jump = jump.first;
+    highest_bv = bv1;    
+
+    if (bv2 > highest_bv){
+	highest_jump = jump.second;
+	highest_bv = bv2;
+    }
+    if (bv3 > highest_bv){
+	highest_jump = jump.third;
+	highest_bv = bv3;
+    }
+
+    elem = elements[highest_jump.name];
+    // elem = elements[jump.first.name];
     if (elem === undefined) return 0;
 
-    sov = elements[jump.first.name].sov;  // yet: to take higest if comb
-    return parseFloat(sov[jump.goe]);
+    return parseFloat(elem.sov[jump.goe]);
 }
 function recalc_jumps(num){
     // jump
+    var bv = 0;
+    
     for (var i = 1; i<=num;i++){
 	id_str = "#jump" + i;
 	
@@ -164,12 +184,12 @@ function recalc(){
     for (var i=1; i<=num_jumps; i++){
 	id_str = "#jump" + i;
 	tes_bv += parseFloat($(id_str + " .bv").text());
+	tes_goesov += parseFloat($(id_str + " .goe_sov").text());
+	tes_score += parseFloat($(id_str + " .score").text());
     }
     $("#tes .bv").text(tes_bv);
-    //$("#tes .goe_sov").text(tes_goe_sov);
-    //$("#tes .score").text(tes_score);
-
-    
+    $("#tes .goe_sov").text(tes_goesov);
+    $("#tes .score").text(tes_score);
 }
 
 function recalc_element(id_str){
