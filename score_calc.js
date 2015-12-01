@@ -1,48 +1,81 @@
 
-var elements = {
-    "3A": {
-	"bv": 8.5,
-	"v": 5.9, "v1": 0,
-	"dg": "",
-	"sov": {"-3": -3, "-2": -2, "-1": -1, 0: 0, 1: 1, 2: 2, 3: 3}
-    },
-    "3Lz": {
-	"bv": 6.0,
-	"v": 4.2, "v1": 3.6,
-	"dg": "2Lz",
-	"sov": {"-3": -2.1, "-2": -1.4, "-1": -0.7, 0: 0, 1: 0.7, 2: 1.4, 3: 1.2}
-    },
-    "2Lz": {
-	"bv": 2.1,
-	"v": 1.5, "v1": 1.4,
-	"dg": "1Lz",
-	"sov": {"-3": -0.9, "-2": -0.6, "-1": -0.3, 0: 0, 1: 0.3, 2: 0.6, 3: 0.9}
-    },
-    "USp1": {
-	"bv": 1.5,
-	"v": 1.1,
-	"sov": {"-3": -0.9, "-2": -0.6, "-1": -0.3, 0: 0, 1: 0.5, 2: 1.0, 3: 1.5}
-    },
-    "StSq1": {
-	"bv": 2.1,
-	"sov": {"-3": -0.9, "-2": -0.6, "-1": -0.3, 0: 0, 1: 0.5, 2: 1.0, 3: 1.5}
-    },
-    "ChSq1": {
-	"bv": 2.1,
-	"sov": {"-3": -0.9, "-2": -0.6, "-1": -0.3, 0: 0, 1: 0.5, 2: 1.0, 3: 1.5}
+// ================================================================
+function format_jump(jump){
+    output =  jump.first.name + jump.first.edge + jump.first.rotation;
+    if (jump.type == "solo") return output
+    output += "-" + jump.second.name + jump.second.edge + jump.second.rotation;
+    if (jump.type == "comb2") return output
+    output += "-" + jump.third.name + jump.third.edge + jump.third.rotation;
+    return output
+}
+function calc_single_jump_bv(sjump){
+    elem = elements[sjump.name]
+    if (elem === undefined) return 0;
+    
+    if (sjump.rotation == "<<"){
+	calc_single_jump_bv({name: elem.dg, edge: sjump.edge, rotation: ""});
+    } else if (sjump.rotation == "<" && sjump.edge == "e"){
+	bv = elements[sjump.name].v1
+    } else if (sjump.rotation == "<" || sjump.edge == "e"){
+	bv = elements[sjump.name].v
+    } else {
+	bv = elements[sjump.name].bv
     }
 
+    return parseFloat(bv);
 }
-// ================================================================
-function test(){
-    return {"bv": 3, "goe_sov": 2, "score": 1}
+function calc_jump_bv(jump){
+
+    switch (jump.type){
+    case "solo":
+	bv = calc_single_jump_bv(jump.first);
+	break;
+    case "comb2":
+	bv = calc_single_jump_bv(jump.first) + calc_single_jump_bv(jump.second);
+	break;
+    case "comb3":
+	bv = calc_single_jump_bv(jump.first) + calc_single_jump_bv(jump.second) + calc_single_jump_bv(jump.third);
+	break;
+    }
+    // credit
+    if (jump.credit == "x") bv *= 1.1;
+    return parseFloat(parseInt(bv*100)/100);
 }
-    
+function calc_jump_goesov(jump) {
+    elem = elements[jump.first.name];
+    if (elem === undefined) return 0;
+
+    sov = elements[jump.first.name].sov;  // yet: to take higest if comb
+    return parseFloat(sov[jump.goe]);
+}
 function recalc_jumps(num){
     // jump
     for (var i = 1; i<=num;i++){
 	id_str = "#jump" + i;
+	
+	// read data
 
+	jump = {
+	    type: $(id_str + " .type").val(),
+	    first: {
+		name: $(id_str + " .first .element").val(),
+		edge: $(id_str + " .first .edge").val(),
+		rotation: $(id_str + " .first .rotation").val(),
+	    },
+	    second: {
+		name: $(id_str + " .second .element").val(),
+		edge: $(id_str + " .second .edge").val(),
+		rotation: $(id_str + " .second .rotation").val(),
+	    },
+	    third: {
+		name: $(id_str + " .third .element").val(),
+		edge: $(id_str + " .third .edge").val(),
+		rotation: $(id_str + " .third .rotation").val(),
+	    },
+	    credit: $(id_str + " .credit").val(),
+	    goe: $(id_str + " .goe").val()
+	}
+	
 	// type
 	type = $(id_str + " .type").val();
 	switch (type){
@@ -60,13 +93,13 @@ function recalc_jumps(num){
 	    break;
 	}
 
-	// first - 
-	// name
-	
-	first_name = $(id_str + " .first .element").val();
-	first_edge = $(id_str + " .first .edge").val();
-	first_ur = $(id_str + " .first .rotation").val();
-	// first_id_str = name + edge + ur;
+	// show
+	bv = parseFloat(calc_jump_bv(jump));
+	goesov = parseFloat(calc_jump_goesov(jump));
+	$(id_str + " .name").text(format_jump(jump));
+	$(id_str + " .bv").text(bv);
+	$(id_str + " .goe_sov").text(goesov);
+	$(id_str + " .score").text(bv + goesov);
     }
 
 }
@@ -105,9 +138,9 @@ function recalc(){
 	    $(id_str + " .score").text("");
 	} else {
 	    $(id_str).css("background-color", "white");
-	    bv = elements[name]["bv"];
+	    bv = parseFloat(elements[name]["bv"]);
 	    goe = $(id_str + " .goe").val();
-	    goe_sov = elements[name]["sov"][goe];
+	    goe_sov = parseFloat(elements[name]["sov"][goe]);
 	    score = bv + goe_sov;
 	    
 	    $(id_str + " .bv").text(bv);
@@ -136,9 +169,9 @@ function recalc(){
 function recalc_element(id_str){
     name = $(id_str + " .element").val();
     try {
-	bv = elements[name]["bv"];
+	bv = parseFloat(elements[name]["bv"]);
 	goe = $(id_str + " .goe").val();
-	goe_sov = elements[name]["sov"][goe];
+	goe_sov = parseFloat(elements[name]["sov"][goe]);
 	score = bv + goe_sov;
 
     } catch(e){

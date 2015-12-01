@@ -9,16 +9,13 @@
 <% 
    require "./score_calc.rb"
 
-   elems = Elements.new
-   elems.register(:jump, "3A", 8.5, [5.9, 0], (-3..3))
-   elems.register(:jump, "3Lz", 6.0, [4.2, 3.6], (-3..3))
-   elems.register(:spin, "SSp", 6.0, [4.2, 3.6], (-3..3))
-   
    num_jumps = 8;
    num_spins = 3;
    num_stsq = 1;
    num_chsq = 1;
-   
+
+   score_calc = ScoreCalc.new
+   elements = score_calc.elements
 
 %>
 
@@ -55,7 +52,7 @@
       <span class="first">
 	<select class="element" onChange="recalc();">
 	  <option value=""></option>
-	  <% elems.values.select {|elem| elem.type == :jump}.each {|elem| %>
+	  <% elements.values.select {|elem| elem.type == :jump}.each {|elem| %>
 	  <option value="<%= elem.name %>"><%= elem.name %></option>
 	  <% } %>
 	</select>
@@ -75,7 +72,10 @@
       <span class="second">
 	-
 	<select class="element" onChange="recalc();">
-	  <%= elems.options_jump() %>
+	  <option value=""></option>
+	  <% elements.values.select {|elem| elem.type == :jump}.each {|elem| %>
+	  <option value="<%= elem.name %>"><%= elem.name %></option>
+	  <% } %>
 	</select>
 	<select class="edge" onChange="recalc();">
 	  <option value=""></option>
@@ -93,7 +93,10 @@
       <span class="third">
 	-
 	<select class="element" onChange="recalc();">
-	  <%= elems.options_jump() %>
+	  <option value=""></option>
+	  <% elements.values.select {|elem| elem.type == :jump}.each {|elem| %>
+	  <option value="<%= elem.name %>"><%= elem.name %></option>
+	  <% } %>
 	</select>
 	<select class="edge" onChange="recalc();">
 	  <option value=""></option>
@@ -215,11 +218,10 @@
 
   <!-- Choreo -->
   <tr id="chsq1">
-    <td>Choreo1
+    <td>ChSq1
     <td>
       <select class="element" onChange="recalc();">
 	<option value=""></option>
-	<option value="ChSqB">ChSqB</option>
 	<option value="ChSq1">ChSq1</option>
       </select>
     </td>
