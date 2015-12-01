@@ -156,10 +156,16 @@ function recalc(){
     }
     // chsq
     recalc_element("#chsq1");
-    
-    // total
 
-    //$("#tes .bv").text(tes_bv);
+    // total
+    
+    tes_bv = tes_goesov = tes_score = 0;
+
+    for (var i=1; i<=num_jumps; i++){
+	id_str = "#jump" + i;
+	tes_bv += parseFloat($(id_str + " .bv").text());
+    }
+    $("#tes .bv").text(tes_bv);
     //$("#tes .goe_sov").text(tes_goe_sov);
     //$("#tes .score").text(tes_score);
 
