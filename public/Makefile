@@ -1,11 +1,11 @@
 
-TARGET = score_calc.html elements.js
+TARGET = index.html elements.js
 
 all: ${TARGET}
 
 
-score_calc.html: score_calc.rhtml
-	erb score_calc.rhtml > score_calc.html
+index.html: score_calc.rhtml
+	erb score_calc.rhtml > index.html
 
 elements.js: score_calc.rb
 	ruby score_calc.rb
