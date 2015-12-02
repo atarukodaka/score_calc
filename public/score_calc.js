@@ -19,7 +19,8 @@ var result = {
 ////////////////////////////////////////////////////////////////
 // utils
 function normalize_float(f){
-    return parseFloat(parseInt(f*100)/100);
+    // return parseFloat(parseInt(f*100)/100);
+    return parseFloat(f).toFixed(2)
 }
 function getval(category, num, selector){
     return $("#" + category + num + " " + selector).val() || "";
@@ -115,14 +116,15 @@ function parse_elements(){
 	    }
 	    bv = parseFloat(bv);
 
-	    // alert(max_bv_jname + ": " + max_bv + " / " + jname + ": " + bv);
 	    if (max_bv < bv) {  max_bv = bv; max_bv_jname = jname; }
 	    sum_bv += parseFloat(bv);
 	}
+	// credit
+	if (jump.credit == "x"){ sum_bv *= 1.1; }
 	if (sum_bv > 0){
-	    jump.bv = normalize_float(sum_bv);
-	    jump.goesov = normalize_float(bvsov[max_bv_jname].sov[jump.goe]);
-	    jump.score = normalize_float(jump.bv + jump.goesov);
+	    jump.bv = parseFloat(sum_bv);
+	    jump.goesov = parseFloat(bvsov[max_bv_jname].sov[jump.goe]);
+	    jump.score = jump.bv + jump.goesov;
 
 	    result.tes.bv += jump.bv;
 	    result.tes.goesov += jump.goesov;
@@ -142,14 +144,14 @@ function parse_elements(){
 	    spin.goesov = parseFloat(bvsov[name].sov[spin.goe])
 	    spin.score = spin.bv + spin.goesov
 	}
-	result.elements.spins[i] = spin;
 
+	result.elements.spins[i] = spin;
 	result.tes.bv += spin.bv;
 	result.tes.goesov += spin.goesov;
 	result.tes.score += spin.score;
 
     }
-    // stsq, chsq
+    // stsq
     for (var i=1; i<=1; i++){
 	name = getval("stsq", i, ".sname");
 	goe = getval("stsq", i, ".goe")
@@ -158,7 +160,7 @@ function parse_elements(){
 	if (! (bvsov[name] === undefined)){
 	    stsq.bv = normalize_float(bvsov[name].bv)
 	    stsq.goesov = normalize_float(bvsov[name].sov[goe])
-	    stsq.score = normalize_float(stsq.bv + stsq.goesov)
+	    stsq.score = normalize_float(parseFloat(stsq.bv) + parseFloat(stsq.goesov))
 	}
 	result.elements.stsq[i] = stsq;
 
@@ -175,7 +177,7 @@ function parse_elements(){
 	if (! (bvsov[name] === undefined)){
 	    chsq.bv = normalize_float(bvsov[name].bv)
 	    chsq.goesov = normalize_float(bvsov[name].sov[goe])
-	    chsq.score = normalize_float(chsq.bv + chsq.goesov)
+	    chsq.score = normalize_float(parseFloat(chsq.bv) + parseFloat(chsq.goesov))
 	}
 	result.elements.chsq[i] = chsq;
 
@@ -187,6 +189,13 @@ function parse_elements(){
     // result.elements.chsq[1] = { name: getval("chsq", 1, ".name"), goe: getval("chsq", 1, ".goe") }
 
     // tes total
+}
+
+function update_element(type, i, elem){
+    settext(type, i, ".name", elem.name);
+    settext(type, i, ".bv", elem.bv);
+    settext(type, i, ".goesov", elem.goesov);
+    settext(type, i, ".score", elem.score);
 }
 
 function update_elements(){
@@ -201,32 +210,20 @@ function update_elements(){
 	$("#jump" + i + " .first").css("visibility", vis[1]);
 	$("#jump" + i + " .second").css("visibility", vis[2]);
 	$("#jump" + i + " .third").css("visibility", vis[3]);
-
-	settext("jump", i, ".name", elem.name);
-	settext("jump", i, ".bv", elem.bv); 
-	settext("jump", i, ".goesov", elem.goesov); 
-	settext("jump", i, ".score", elem.score);
+	
+	update_element("jump", i, elem);
     }
     // spin
     for (var i=1; i<=3; i++){
-	settext("spin", i, ".name", result.elements.spins[i].name);
-	settext("spin", i, ".bv", result.elements.spins[i].bv);	
-	settext("spin", i, ".goesov", result.elements.spins[i].goesov);	
-	settext("spin", i, ".score", result.elements.spins[i].score);
+	update_element("spin", i, result.elements.spins[i]);
     }
     // stsq
     for (var i=1; i<=1; i++){
-	settext("stsq", i, ".name", result.elements.stsq[i].name);
-	settext("stsq", i, ".bv", result.elements.stsq[i].bv);	
-	settext("stsq", i, ".goesov", result.elements.stsq[i].goesov);	
-	settext("stsq", i, ".score", result.elements.stsq[i].score);
+	update_element("stsq", i, result.elements.stsq[i]);
     }
     // chsq
     for (var i=1; i<=1; i++){
-	settext("chsq", i, ".name", result.elements.chsq[i].name);
-	settext("chsq", i, ".bv", result.elements.chsq[i].bv);	
-	settext("chsq", i, ".goesov", result.elements.chsq[i].goesov);	
-	settext("chsq", i, ".score", result.elements.chsq[i].score);
+	update_element("chsq", i, result.elements.chsq[i]);
     }
     // tes total
     settext("tes", "", ".bv", normalize_float(result.tes.bv));
