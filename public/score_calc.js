@@ -3,18 +3,22 @@
 //
 ////////////////////////////////////////////////////////////////
 
-var result = {
-    displine: "Men", segment: "SP",
-    elements: {
-	jumps: [],
-	spins: [],
-	stsq: [],
-	chsq: [],
-    },
-    components: {
-	"SS": {name: "Skating Skills"}
-    },
-    tes: { bv: 0, goesov: 0, score: 0}
+var result = {}
+
+function initialize(){
+    result = {
+	displine: "Men", segment: "SP",
+	elements: {
+	    jumps: [],
+	    spins: [],
+	    stsq: [],
+	    chsq: [],
+	},
+	components: {
+	    "SS": {name: "Skating Skills"}
+	},
+	tes: { bv: 0, goesov: 0, score: 0, comment: ""}
+    }
 }
 ////////////////////////////////////////////////////////////////
 // utils
@@ -135,8 +139,19 @@ function parse_elements(){
     
     // spin
     for (var i=1; i<=3; i++){
-	name = getval("spin", i, ".flying") + getval("spin", i, ".changefoot") + getval("spin", i, ".position") + getval("spin", i, ".level");
-	spin = { name: name, goe: getval("spin", i, ".goe"), bv: 0, goesov: 0, score: 0}
+	var flying = getval("spin", i, ".flying")
+	var changefoot = getval("spin", i, ".changefoot")
+	var position = getval("spin", i, ".position")
+	var level = getval("spin", i, ".level");
+	var name =  flying + changefoot + position + level;
+	spin = {
+	    name: name, 
+	    flying: (flying == "F") ? true : false, 
+	    changefoot: (changefoot == "C") ? true: false,
+	    position: position, level: level, 
+	    is_comb: (position != "CoSp2p" && position != "CoSp3p") ? true : false,
+	    goe: getval("spin", i, ".goe"), bv: 0, goesov: 0, score: 0
+	}
 
 	// score
 	if (! (bvsov[name] === undefined)){
@@ -230,6 +245,8 @@ function update_elements(){
     settext("tes", "", ".bv", normalize_float(result.tes.bv));
     settext("tes", "", ".goesov", normalize_float(result.tes.goesov));
     settext("tes", "", ".score", normalize_float(result.tes.score));
+    // comment
+    settext("tes_comment", "", "", result.tes.comment);
 }
 
 function enable_element(type, i){
@@ -247,7 +264,7 @@ function enable_all_elements(){
     for (var i=1; i<=1; i++){ enable_element("chsq", i) }
 }
 
-function check_errors(){
+function check_rules(){
     enable_all_elements();
 
 
@@ -302,11 +319,29 @@ function check_errors(){
 		    if (rev1 < 2 || rev1 > 3){ elem.comment = "* invalid axel" } break;
 		}
 		n_solo_axel += 1;
-		if (n_solo_axel > 1){ elem.comment = "* too many solo axel" }
 	    }
 
 	}
-	if (n_solo_axel == 0){ result.elements.jumps[3].comment = "* no axel" }	
+	if (n_solo_axel == 0){ result.tes.comment += "* [JUMP] Axel jump required \n" }	
+	if (n_solo_axel > 1){ result.tes.comment += "* [JUMP] too many axel jump\n" }	
+	
+	// spin
+	var n_LSp = 0;
+	var n_cf_single_position = 0;
+	var n_ccosp = 0;
+	var n_flying = 0;
+	for (var i=1; i<=3; i++){
+	    elem = result.elements.spins[i]
+	    if (elem.position == "LSp") { n_LSp += 1 }
+	    if (elem.flying && !elem.is_comb) { n_flying += 1 }
+	    if (elem.changefoot && !elem.is_comb){ n_cf_single_position += 1}
+	    if (elem.changefoot && elem.is_comb){ n_ccosp += 1 }
+	}
+	if (result.displine == "Ladies" && n_LSp < 1){ result.tes.comment += "* [SPIN] LSp required\n" }
+	if (n_flying < 1){ result.tes.comment += "* [SPIN] Flying Spin required\n" }
+	if (n_cf_single_position < 1){ result.tes.comment += "* [SPIN] Single Position w/changefoot Spin required\n"}
+	if (n_ccosp < 1){ result.tes.comment += "* [SPIN] CCoSp required\n" }
+
 
 	// chsq
 	disable_element("chsq", 1);
@@ -315,20 +350,21 @@ function check_errors(){
 	break;
     case "FS":
 	// jump
+	for (var i=1; i<=8; i++){
+	    
+	}
     }
-
-    // rule check
-    
 
 }
 
 function recalc(){
+    initialize();
     result.displine = $("input[name='displine']:checked").val();
     result.segment = $("input[name='segment']:checked").val();
 	
     parse_elements();
 
-    check_errors();
+    check_rules();
     update_elements();
     // parse_components();
 
