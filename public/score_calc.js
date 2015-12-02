@@ -149,7 +149,7 @@ function parse_elements(){
 	    flying: (flying == "F") ? true : false, 
 	    changefoot: (changefoot == "C") ? true: false,
 	    position: position, level: level, 
-	    is_comb: (position != "CoSp2p" && position != "CoSp3p") ? true : false,
+	    is_comb: (position == "CoSp2p" || position == "CoSp3p") ? true : false,
 	    goe: getval("spin", i, ".goe"), bv: 0, goesov: 0, score: 0
 	}
 
@@ -332,16 +332,19 @@ function check_rules(){
 	var n_flying = 0;
 	for (var i=1; i<=3; i++){
 	    elem = result.elements.spins[i]
+	    if (elem.bv == 0) break;
 	    if (elem.position == "LSp") { n_LSp += 1 }
 	    if (elem.flying && !elem.is_comb) { n_flying += 1 }
 	    if (elem.changefoot && !elem.is_comb){ n_cf_single_position += 1}
 	    if (elem.changefoot && elem.is_comb){ n_ccosp += 1 }
 	}
-	if (result.displine == "Ladies" && n_LSp < 1){ result.tes.comment += "* [SPIN] LSp required\n" }
+	if (result.displine == "Ladies"){
+	    if (n_LSp < 1){ result.tes.comment += "* [SPIN] LSp required for Ladies\n" }
+	} else {
+	    if (n_cf_single_position < 1){ result.tes.comment += "* [SPIN] Single Position w/changefoot Spin required for Men\n"}
+	}
 	if (n_flying < 1){ result.tes.comment += "* [SPIN] Flying Spin required\n" }
-	if (n_cf_single_position < 1){ result.tes.comment += "* [SPIN] Single Position w/changefoot Spin required\n"}
 	if (n_ccosp < 1){ result.tes.comment += "* [SPIN] CCoSp required\n" }
-
 
 	// chsq
 	disable_element("chsq", 1);
