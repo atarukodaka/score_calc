@@ -193,9 +193,9 @@ function parse_elements(){
 
 function update_element(type, i, elem){
     settext(type, i, ".name", elem.name);
-    settext(type, i, ".bv", elem.bv);
-    settext(type, i, ".goesov", elem.goesov);
-    settext(type, i, ".score", elem.score);
+    settext(type, i, ".bv", normalize_float(elem.bv));
+    settext(type, i, ".goesov", normalize_float(elem.goesov));
+    settext(type, i, ".score", normalize_float(elem.score));
 }
 
 function update_elements(){
@@ -231,11 +231,34 @@ function update_elements(){
     settext("tes", "", ".score", normalize_float(result.tes.score));
 }
 
+function enable_element(type, i){
+    $("#" + type + i).css("background-color", "white");
+}
+function disable_element(type, i, comment){
+    settext(type, i, ".comment", comment);
+    $("#" + type + i).css("background-color", "lightgray");
+}
+function check_errors(){
+    switch (result.segment){
+    case "SP":
+	// jump
+	for (var i=1; i<=3; i++){
+	    enable_element("jump", i);
+	}
+	for (var i=4; i<=8; i++){
+	    disable_element("jump", i);
+	}
+	// chsq
+	disable_element("chsq", 1);
+	break;
+    }
+}
+
 function recalc(){
     parse_elements();
 
     update_elements();
     // parse_components();
 
-    // check_errors();
+    check_errors();
 }
