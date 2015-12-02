@@ -1,16 +1,14 @@
 <html>
 <head>
  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<script type="text/javascript" src="elements.js"></script>
+<script type="text/javascript" src="bvsov.js"></script>
 <script type="text/javascript" src="score_calc.js">
 </script>
 </head>
 
 <% 
-   num_jumps = 8;
-   num_spins = 3;
-   num_stsq = 1;
-   num_chsq = 1;
+num_jumps = 8;
+num_spins = 3;
 
 def jump_options
    output = []
@@ -40,20 +38,12 @@ Segment:
 </form>
 
 
-
 <h2> Technical Element Score</h2>
 
 <table border="1">
   <tr>
-    <th>Type</th>
-    <th>Element</th>
-    <th>credit</th>
-    <th>GOE</th>
-    <th>Name</th>
-    <th>BV</th>
-    <th>GOE/SOV</th>
-    <th>Score</th>
-    <th>Comment</th>
+    <th>Type</th><th>Element</th><th>credit</th><th>GOE</th>
+    <th>Name</th><th>BV</th><th>GOE/SOV</th><th>Score</th><th>Comment</th>
   </tr>
   <% (1..num_jumps).each {|i| %>
   <tr id="jump<%= i %>">
@@ -67,7 +57,7 @@ Segment:
       </select>
       <!-- First jump -->
       <span class="first">
-	<select class="element" onChange="recalc();">
+	<select class="jname" onChange="recalc();">
 	  <option value=""></option>
 	  <%= jump_options() %>
 	</select>
@@ -76,9 +66,9 @@ Segment:
 	  <option value="!">!</option>
 	  <option value="e">e</option>
 	</select>
-	<select class="rotation" onChange="recalc()">
+	<select class="ur" onChange="recalc();">
 	  <option value=""></option>
-	<option value="<">&lt;</option>
+	  <option value="<">&lt;</option>
 	  <option value="<<">&lt;&lt;</option>
 	</select>
       </span>
@@ -86,7 +76,7 @@ Segment:
       <!-- Second jump -->
       <span class="second">
 	-
-	<select class="element" onChange="recalc();">
+	<select class="jname" onChange="recalc();">
 	  <option value=""></option>
 	  <%= jump_options() %>
 	</select>
@@ -95,10 +85,9 @@ Segment:
 	  <option value="!">!</option>
 	  <option value="e">e</option>
 	</select>
-	<select class="rotation" onChange="recalc()">
+	<select class="ur" onChange="recalc();">
 	  <option value=""></option>
-	  <%= jump_options() %>
-	<option value="<">&lt;</option>
+	  <option value="<">&lt;</option>
 	  <option value="<<">&lt;&lt;</option>
 	</select>
       </span>
@@ -106,15 +95,16 @@ Segment:
       <!-- thid jump -->
       <span class="third">
 	-
-	<select class="element" onChange="recalc();">
+	<select class="jname" onChange="recalc();">
 	  <option value=""></option>
+	  <%= jump_options() %>
 	</select>
 	<select class="edge" onChange="recalc();">
 	  <option value=""></option>
 	  <option value="!">!</option>
 	  <option value="e">e</option>
 	</select>
-	<select class="rotation" onChange="recalc()">
+	<select class="ur" onChange="recalc()">
 	  <option value=""></option>
 	<option value="<">&lt;</option>
 	  <option value="<<">&lt;&lt;</option>
@@ -140,7 +130,7 @@ Segment:
     </td>
     <td><span class="name"></span>
     <td><span class="bv"></span>
-    <td><span class="goe_sov"></span>
+    <td><span class="goesov"></span>
     <td><span class="score"></span>	
     <td><span class="comment"></span>
   </tr>
@@ -190,7 +180,7 @@ Segment:
       </select>
     <td><span class="name"></span>
     <td><span class="bv"></span>
-    <td><span class="goe_sov"></span>
+    <td><span class="goesov"></span>
     <td><span class="score"></span>	
     <td><span class="comment"></span>
   </tr>
@@ -200,7 +190,7 @@ Segment:
   <tr id="stsq1">
     <td>StSq1
     <td>
-      <select class="element" onChange="recalc();">
+      <select class="sname" onChange="recalc();">
 	<option value=""></option>
 	<option value="StSqB">StSqB</option>
 	<option value="StSq1">StSq1</option>
@@ -222,7 +212,7 @@ Segment:
       </select>
     <td><span class="name"></span>
     <td><span class="bv"></span>
-    <td><span class="goe_sov"></span>
+    <td><span class="goesov"></span>
     <td><span class="score"></span>	
     <td><span class="comment"></span>
   </tr>
@@ -231,7 +221,7 @@ Segment:
   <tr id="chsq1">
     <td>ChSq1
     <td>
-      <select class="element" onChange="recalc();">
+      <select class="cname" onChange="recalc();">
 	<option value=""></option>
 	<option value="ChSq1">ChSq1</option>
       </select>
@@ -249,11 +239,10 @@ Segment:
       </select>
     <td><span class="name"></span>
     <td><span class="bv"></span>
-    <td><span class="goe_sov"></span>
+    <td><span class="goesov"></span>
     <td><span class="score"></span>	
     <td><span class="comment"></span>
   </tr>
-
 
   <tr id="tes">
     <td>Total
@@ -262,29 +251,11 @@ Segment:
     <td>
     <td>
     <td><span class="bv">
-    <td><span class="goe_sov">
+    <td><span class="goesov">
     <td><span class="score">
 </table>
 
 <!-- ################################################################ -->
-
-<h2>Program Component Score</h2>
-
-<table border=1>
-  <tr>
-    <th>
-    </th>
-  <tr>
-    <td>Skating Skills
-  <tr>
-    <td>Transition
-  <tr>
-    <td>Performance
-  <tr>
-    <td>Ch
-  <tr>
-    <td>Interp
-</table>
 
 </body>
 </html>

@@ -2,7 +2,7 @@
 require 'csv'
 
 def run
-  csv_fname = "sov.csv"
+  csv_fname = "bvsov.csv"
   table = CSV.table(csv_fname)
 
 
@@ -11,7 +11,7 @@ def run
     %Q["#{row[:element]}": {bv: "#{row[:bv]}", v: "#{row[:v]}", v1: "#{row[:v1]}", sov: #{sov_str}}]
   }.join(",\n")
 
-  output = "var elements = {
+  output = "var bvsov = {
 #{elems}
 }"
 

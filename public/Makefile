@@ -1,5 +1,5 @@
 
-TARGET = index.html elements.js
+TARGET = index.html bvsov.js
 
 all: ${TARGET}
 
@@ -7,8 +7,8 @@ all: ${TARGET}
 index.html: score_calc.rhtml
 	erb score_calc.rhtml > index.html
 
-elements.js: sov.csv 
-	ruby sov.rb > elements.js
+bvsov.js: bvsov.csv 
+	ruby bvsov.rb > bvsov.js
 clean:
 	rm -f *~ ${TARGET}
 
