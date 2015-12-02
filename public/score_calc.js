@@ -66,6 +66,12 @@ function calc_jump_goesov(jump) {
 
     return parseFloat(elem.sov[jump.goe]);
 }
+
+var jumps = [];
+var spins = [];
+var stsq;
+var chsq;
+
 function recalc_jumps(num){
     // jump
     var bv = 0;
@@ -95,7 +101,7 @@ function recalc_jumps(num){
 	    credit: $(id_str + " .credit").val(),
 	    goe: $(id_str + " .goe").val()
 	}
-	
+	jumps[i] = jump;
 	// type
 	type = $(id_str + " .type").val();
 	switch (type){
@@ -116,14 +122,25 @@ function recalc_jumps(num){
 	// show
 	bv = parseFloat(calc_jump_bv(jump));
 	goesov = parseFloat(calc_jump_goesov(jump));
-	$(id_str + " .name").text(format_jump(jump));
-	$(id_str + " .bv").text(bv);
-	$(id_str + " .goe_sov").text(goesov);
-	$(id_str + " .score").text(bv + goesov);
+	update_score(id_str, format_jump(jump), bv, goesov, bv + goesov);
     }
 
 }
 
+function recalc_element(id_str, name){
+    // name = $(id_str + " .element").val();
+    try {
+	bv = parseFloat(elements[name]["bv"]);
+	goe = $(id_str + " .goe").val();
+	goe_sov = parseFloat(elements[name]["sov"][goe]);
+	score = parseInt((bv + goe_sov)*100)/100;
+
+    } catch(e){
+	bv = goe_sov = score = 0;
+    }
+    update_score(id_str, name, bv, goe_sov, score);
+}
+////////////////
 function recalc(){
 
     num_jumps = 8;
@@ -145,40 +162,22 @@ function recalc(){
 	}
 	name = $(id_str + " .flying").val() + $(id_str + " .changefoot").val() + position + level;
 	$(id_str + " .name").text(name);
-
-	// error check
-	
-	if (position && elements[name] === undefined){
-	    $(id_str).css("background-color", "lightgray");
-	    bv = goe_sov = score = 0;
-	} else if (name == ""){
-	    $(id_str + " .name").text("");
-	    $(id_str + " .bv").text("");
-	    $(id_str + " .goe_sov").text("");
-	    $(id_str + " .score").text("");
-	} else {
-	    $(id_str).css("background-color", "white");
-	    bv = parseFloat(elements[name]["bv"]);
-	    goe = $(id_str + " .goe").val();
-	    goe_sov = parseFloat(elements[name]["sov"][goe]);
-	    score = bv + goe_sov;
-	    
-	    $(id_str + " .bv").text(bv);
-	    $(id_str + " .goe_sov").text(goe_sov);
-	    $(id_str + " .score").text(score);
-	}
-
+	recalc_element(id_str, name);
     }
     // stsq
     for (var i = 1; i <= 1; i++){
 	id_str = "#stsq" + i;
-	recalc_element(id_str);
+	recalc_element(id_str, $(id_str + " .element").val());
     }
     // chsq
-    recalc_element("#chsq1");
+    recalc_element("#chsq1", $("#chsq1 .element").val());
 
     // total
-    
+    update_total();
+    // 
+    rule_check();
+}
+function update_total(){
     tes_bv = tes_goesov = tes_score = 0;
 
     for (var i=1; i<=num_jumps; i++){
@@ -187,23 +186,155 @@ function recalc(){
 	tes_goesov += parseFloat($(id_str + " .goe_sov").text());
 	tes_score += parseFloat($(id_str + " .score").text());
     }
-    $("#tes .bv").text(tes_bv);
-    $("#tes .goe_sov").text(tes_goesov);
-    $("#tes .score").text(tes_score);
-}
-
-function recalc_element(id_str){
-    name = $(id_str + " .element").val();
-    try {
-	bv = parseFloat(elements[name]["bv"]);
-	goe = $(id_str + " .goe").val();
-	goe_sov = parseFloat(elements[name]["sov"][goe]);
-	score = bv + goe_sov;
-
-    } catch(e){
-	bv = goe_sov = score = "";
+    for (var i=1; i<=num_spins; i++){
+	id_str = "#spin" + i;
+	tes_bv += parseFloat($(id_str + " .bv").text());
+	tes_goesov += parseFloat($(id_str + " .goe_sov").text());
+	tes_score += parseFloat($(id_str + " .score").text());
     }
-    $(id_str + " .bv").text(bv);
-    $(id_str + " .goe_sov").text(goe_sov);
-    $(id_str + " .score").text(score);
+    id_str = "#stsq1";
+    tes_bv += parseFloat($(id_str + " .bv").text());
+    tes_goesov += parseFloat($(id_str + " .goe_sov").text());
+    tes_score += parseFloat($(id_str + " .score").text());
+    
+    id_str = "#chsq1";
+    tes_bv += parseFloat($(id_str + " .bv").text());
+    tes_goesov += parseFloat($(id_str + " .goe_sov").text());
+    tes_score += parseFloat($(id_str + " .score").text());
+    
+    // $("#tes .bv").text(tes_bv);
+    // $("#tes .goe_sov").text(tes_goesov);
+    // $("#tes .score").text(tes_score);
+    update_score("#tes", "", tes_bv, tes_goesov, tes_score);
+}
+function format_number(num){
+    return parseInt(num*100)/100;
+}
+function update_score(id_str, name, bv, goesov, score, comment){
+    $(id_str + " .name").text(name);
+    $(id_str + " .bv").text(format_number(bv));
+    $(id_str + " .goe_sov").text(format_number(goesov));
+    $(id_str + " .score").text(format_number(score));
+    $(id_str + " .comment").text(comment);
+}
+////////////////////////////////////////////////////////////////
+// rule check
+function disable_element(id_str, comment){
+    $(id_str).css("background", "lightgray");
+    update_score(id_str, "", 0, 0, 0, comment);
+}
+function enable_element(id_str){
+    $(id_str + " .comment").text("");
+    $(id_str).css("background", "white");
+}
+function is_axel(name){
+    if (name == "1A" || name == "2A" || name == "3A" || name == "4A"){
+	return true;
+    } else {
+	return false;
+    }
+}
+function rev_jump(name){
+    return parseInt(name.charAt(0));
+}
+function enable_all_elements(){
+    for (var i=1; i<= 8; i++){
+	enable_element("#jump" + i);
+    }
+    for (var i=1; i<= 3; i++){
+	enable_element("#spin" + i);
+    }
+    enable_element("#stsq1");
+    enable_element("#chsq1");
+}
+////////////////
+function rule_check(){
+    var n_jumps, n_spins, n_stsq, n_chsq;
+
+    var displine = $("input[name='displine']:checked").val();
+    var segment = $("input[name='segment']:checked").val();
+
+    enable_all_elements();
+    switch (segment){
+    case "SP":
+	m_jumps = 8;
+	n_jumps = 3;
+	n_spins = 3;
+	n_stsq = 1;
+	n_chsq = 0;
+
+	// ** jump
+	for (var i=n_jumps+1; i<=m_jumps; i++){
+	    disable_element("#jump" + i, "not for SP");
+	}
+
+	// comb3 not allowed
+	for (var i=1; i<=n_jumps; i++){
+	    if ($("#jump"+ i + " .type").val() == "comb3"){
+		disable_element("#jump" + i, "comb3 not allowed");
+	    }
+	}
+	// comb only 1
+	var n = 0;
+	for (var i=1; i<=n_jumps; i++){
+	    type = $("#jump" + i + " .type").val();
+	    if (type == "comb2" || type == "comb3") n+=1
+	    if (n>1){
+		disable_element("#jump" + i, "combination jumps limited to 1");
+		break;
+	    }
+	}
+	// axel
+	for (var i=1; i<=n_jumps; i++){
+	    id_str = "#jump" + i;
+	    type = $(id_str + " .type").val();
+	    name = $(id_str + " .first .element").val();
+	    rev = rev_jump(name);
+	    if (type == "solo" && is_axel(name)){
+		if (rev == 1 || rev == 4){
+		    disable_element(id_str, "* invalid")
+		    break;
+		}
+	    }
+	}
+	// combination number check
+	for (var i=1; i<=n_jumps; i++){
+	    id_str = "#jump" + i;
+	    if ($(id_str + " .type").val() == "comb2"){
+		rev1 = rev_jump($(id_str + " .first .element").val());
+		rev2 = rev_jump($(id_str + " .second .element").val());	    
+		switch (displine){
+		case "Men":
+		    if ((rev1 == 2 && rev2 == 3) || (rev1 == 3 && rev2 == 2) ||
+			(rev1 == 3 && rev2 == 3) || 
+			(rev1 == 4 && rev2 == 2) || (rev1 == 2 && rev2 == 4) || 
+			(rev1 == 4 && rev2 == 3) || (rev1 == 3 && rev2 == 4)){
+		    } else {
+			disable_element(id_str, "comb error"); break;
+		    }
+		    break;
+		case "Ladies":
+		    break;
+		}
+	    }
+	}
+	// ** chsq
+	disable_element("#chsq1", "not for SP");
+	break;
+    case "FS":
+	if (displine == "Men") { n_jumps = m_jumps; } else { n_jumps = 7; }
+	n_spins = 3;
+	n_stsq = 1;
+	n_chsq = 1;
+
+	for (var i=1; i<=m_jumps; i++){
+	    enable_element("#jump" + i);
+	}
+	for (var i=n_jumps+1; i<=m_jumps; i++){
+	    disable_element("#jump" + i);
+	}
+	enable_element("#chsq1");
+	break;
+    }
+    update_total();
 }
