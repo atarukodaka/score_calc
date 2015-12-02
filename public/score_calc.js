@@ -52,6 +52,8 @@ function dg_jump(jname){
 }
 ////////////////////////////////////////////////////////////////
 function parse_elements(){
+    result.tes.bv = result.tes.goesov = result.tes.score = 0;
+
     // jump
     for (var i=1; i<=8; i++){
 	jump = { 
@@ -136,8 +138,8 @@ function parse_elements(){
 
 	// score
 	if (! (bvsov[name] === undefined)){
-	    spin.bv = bvsov[name].bv
-	    spin.goesov = bvsov[name].sov[spin.goe]
+	    spin.bv = parseFloat(bvsov[name].bv)
+	    spin.goesov = parseFloat(bvsov[name].sov[spin.goe])
 	    spin.score = spin.bv + spin.goesov
 	}
 	result.elements.spins[i] = spin;
@@ -190,10 +192,20 @@ function parse_elements(){
 function update_elements(){
     // jump
     for (var i=1; i<=8; i++){
-	settext("jump", i, ".name", result.elements.jumps[i].name);
-	settext("jump", i, ".bv", result.elements.jumps[i].bv);	
-	settext("jump", i, ".goesov", result.elements.jumps[i].goesov);	
-	settext("jump", i, ".score", result.elements.jumps[i].score);
+	elem = result.elements.jumps[i];
+
+	vis = ['', 'visible', 'visible', 'visible']
+	if (elem.num_jumps < 3) { vis[3] = 'hidden'; }
+	if (elem.num_jumps < 2) { vis[2] = 'hidden'; }	
+	
+	$("#jump" + i + " .first").css("visibility", vis[1]);
+	$("#jump" + i + " .second").css("visibility", vis[2]);
+	$("#jump" + i + " .third").css("visibility", vis[3]);
+
+	settext("jump", i, ".name", elem.name);
+	settext("jump", i, ".bv", elem.bv); 
+	settext("jump", i, ".goesov", elem.goesov); 
+	settext("jump", i, ".score", elem.score);
     }
     // spin
     for (var i=1; i<=3; i++){
