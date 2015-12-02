@@ -196,6 +196,7 @@ function update_element(type, i, elem){
     settext(type, i, ".bv", normalize_float(elem.bv));
     settext(type, i, ".goesov", normalize_float(elem.goesov));
     settext(type, i, ".score", normalize_float(elem.score));
+    settext(type, i, ".comment", elem.comment);
 }
 
 function update_elements(){
@@ -232,33 +233,103 @@ function update_elements(){
 }
 
 function enable_element(type, i){
+    settext(type, i, ".comment", "");
     $("#" + type + i).css("background-color", "white");
 }
 function disable_element(type, i, comment){
     settext(type, i, ".comment", comment);
     $("#" + type + i).css("background-color", "lightgray");
 }
+function enable_all_elements(){
+    for (var i=1; i<=8; i++){ enable_element("jump", i) }
+    for (var i=1; i<=3; i++){ enable_element("spin", i) }
+    for (var i=1; i<=1; i++){ enable_element("stsq", i) }
+    for (var i=1; i<=1; i++){ enable_element("chsq", i) }
+}
+
 function check_errors(){
+    enable_all_elements();
+
+
     switch (result.segment){
     case "SP":
 	// jump
-	for (var i=1; i<=3; i++){
-	    enable_element("jump", i);
-	}
 	for (var i=4; i<=8; i++){
 	    disable_element("jump", i);
 	}
+	// combination
+	var cj = 0;
+	var n_solo_axel = 0;
+	for (var i=1; i<=3; i++){
+	    // comb
+	    elem = result.elements.jumps[i];
+	    if (elem.num_jumps >= 3){ elem.comment = "* invalid combination jump fo SP"; }
+	    if (elem.num_jumps >= 2){
+		cj += 1; 
+		if (cj > 1){ elem.comment = "* too many combination" }
+	    }
+	    if (elem.is_comb){
+		rev1 = rev(elem.executed[1].jname)
+		rev2 = rev(elem.executed[2].jname)
+		
+		switch (result.displine){
+		case "Men":
+		    if ((rev1 == 2 && rev2 == 3) || (rev1 == 3 && rev2 == 2) ||
+			(rev1 == 3 && rev2 == 3) || 
+			(rev1 == 4 && rev2 == 2) || (rev1 == 2 && rev2 == 4) || 
+			(rev1 == 4 && rev2 == 3) || (rev1 == 3 && rev2 == 4)){
+		    } else {
+			elem.comment = "* combination not suit"
+		    }
+		    break;
+		case "Ladies":
+		    if ((rev1 == 3 && rev2 == 2) || (rev1 == 2 && rev2 == 3) ||
+			(rev1 == 3 && rev2 == 3)){
+		    } else {
+			elem.comment = "* combination not suit"
+		    }
+		    break;
+		}
+	    }
+
+	    // axel
+	    if (elem.type == "solo" && is_axel(elem.executed[1].jname)){
+		rev1 = rev(elem.executed[1].jname)
+		switch (result.displine){
+		case "Men":
+		    if (rev1 < 2){ elem.comment = "* invalid axel" } break;
+		case "Ladies":
+		    if (rev1 < 2 || rev1 > 3){ elem.comment = "* invalid axel" } break;
+		}
+		n_solo_axel += 1;
+		if (n_solo_axel > 1){ elem.comment = "* too many solo axel" }
+	    }
+
+	}
+	if (n_solo_axel == 0){ result.elements.jumps[3].comment = "* no axel" }	
+
 	// chsq
 	disable_element("chsq", 1);
+
+	
 	break;
+    case "FS":
+	// jump
     }
+
+    // rule check
+    
+
 }
 
 function recalc(){
+    result.displine = $("input[name='displine']:checked").val();
+    result.segment = $("input[name='segment']:checked").val();
+	
     parse_elements();
 
+    check_errors();
     update_elements();
     // parse_components();
 
-    check_errors();
 }
