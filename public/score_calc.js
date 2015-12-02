@@ -19,6 +19,16 @@ function initialize(){
 	},
 	tes: { bv: 0, goesov: 0, score: 0, comment: ""}
     }
+    rules = {}
+    repetation_jump = {}
+    for (var i = 2; i<=4; i++){   // yet: 
+	repetation_jump[i + "A"] = 0;
+	repetation_jump[i + "Lz"] = 0;
+	repetation_jump[i + "F"] = 0;
+	repetation_jump[i + "Lo"] = 0;
+	repetation_jump[i + "S"] = 0;
+	repetation_jump[i + "T"] = 0;
+    }
 }
 ////////////////////////////////////////////////////////////////
 // utils
@@ -83,6 +93,8 @@ function parse_elements(){
 	    if (jn != "Lz"&& jn != "F"){ each_jump.edge = "" }
 
 	    jump.executed[j] = each_jump;
+	    // repeat
+	    repetation_jump[each_jump.jname] += 1
 	}
 	// name
 	var name = "";
@@ -360,6 +372,16 @@ function check_rules(){
 
 }
 
+function update_repetation_jump(){
+    ar = ['A', 'Lz', 'F', 'Lo', 'S', 'T'];
+    for (var i=2; i<=4; i++){
+	len = ar.length;
+	for (var j=0; j<len; j++){
+	    // alert(".jr_" + i + ar[j])
+	    settext("repetation_jump", "", ".jr_" + i + ar[j], repetation_jump[i + ar[j]]);
+	}
+    }
+}
 function recalc(){
     initialize();
     result.displine = $("input[name='displine']:checked").val();
@@ -369,6 +391,7 @@ function recalc(){
 
     check_rules();
     update_elements();
+    update_repetation_jump();
     // parse_components();
 
 }

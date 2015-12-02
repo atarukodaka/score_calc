@@ -255,7 +255,22 @@ Segment:
     <td><span class="score">
 </table>
 
-<h3>comment</h3>
+<h3>Repetation of Jump</h3>
+<table border=1 id="repetation_jump">
+  <tr><th>t<th>4<th>3<th>2
+      <% ['A', 'Lz', 'F', 'Lo', 'S', 'T'].each {|t| %>
+      <tr>
+	<td><%= t %>
+    <%  [4, 3, 2].each {|r|  %>
+	<td><span class="jr_<%= r %><%= t %>">0</span>
+    <% 
+       }
+       }
+    %>
+</table>
+
+
+<h3>Rules to satisfy</h3>
 <textarea id="tes_comment" rows=10 cols=70>
 </textarea>
 
